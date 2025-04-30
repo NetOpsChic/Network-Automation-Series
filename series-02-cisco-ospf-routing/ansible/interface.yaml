@@ -1,0 +1,68 @@
+---
+- name: Configure interfaces using ios_interfaces module
+  hosts: all
+  gather_facts: no
+  connection: network_cli
+
+  tasks:
+    - name: Configure R1 interfaces
+      cisco.ios.ios_l3_interfaces:
+        config:
+          - name: Ethernet1/0
+            ipv4:
+              - address: 10.0.0.1/8
+          - name: Loopback0
+            ipv4:
+              - address: 1.1.1.1/32
+        state: merged
+      when: inventory_hostname == "R1"
+
+    - name: Configure R2 interfaces
+      cisco.ios.ios_l3_interfaces:
+        config:
+          - name: Ethernet1/0
+            ipv4:
+              - address: 10.0.0.2/8
+          - name: Ethernet2/0
+            ipv4:
+              - address: 20.0.0.1/8
+        state: merged
+      when: inventory_hostname == "R2"
+
+    - name: Configure R3 interfaces
+      cisco.ios.ios_l3_interfaces:
+        config:
+          - name: Ethernet2/0
+            ipv4:
+              - address: 20.0.0.2/8
+          - name: Loopback0
+            ipv4:
+              - address: 2.2.2.2/32
+        state: merged
+      when: inventory_hostname == "R3"
+    
+    - name: Enable physical interfaces on R1
+      cisco.ios.ios_interfaces:
+        config:
+          - name: Ethernet1/0
+            enabled: true
+        state: merged
+      when: inventory_hostname == "R1"
+
+    - name: Enable physical interfaces on R2
+      cisco.ios.ios_interfaces:
+        config:
+          - name: Ethernet1/0
+            enabled: true
+          - name: Ethernet2/0
+            enabled: true
+        state: merged
+      when: inventory_hostname == "R2"
+
+    - name: Enable physical interfaces on R3
+      cisco.ios.ios_interfaces:
+        config:
+          - name: Ethernet2/0
+            enabled: true
+        state: merged
+      when: inventory_hostname == "R3"

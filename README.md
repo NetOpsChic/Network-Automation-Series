@@ -1,40 +1,43 @@
-# Series 01 - Static Routing on Cisco (Terraform + Ansible + GNS3)
+# Network Automation Series 🚀
 
-Welcome to the first tutorial in the **Network Automation Series**!  
-In this project, we automate a simple Cisco router topology inside **GNS3**, using:
-
-- **Terraform** to deploy the topology
-- **Ansible** to configure interface IPs and static routes
-
-The goal is to create a basic 3-router setup where **R1 can ping R3’s loopback** via static routing.
+This repository contains a hands-on series of labs demonstrating how to automate network device configuration using **Ansible**, **Terraform**, and **GNS3**. Each part focuses on a specific routing protocol or technology and gradually builds toward a fully automated network lab environment.
 
 ---
 
-## 🔧 What You'll Learn
+## 📚 Series Structure
 
-- How to use **Terraform with GNS3** to deploy Cisco routers and connect them
-- How to assign IP addresses and bring interfaces up using **Ansible**
-- How to configure **static routes** with Ansible modules
-- How to troubleshoot and validate connectivity
+### 🔹 Part 1 – Static Routing Automation (Cisco)
+- Configure static routes on Cisco routers using **Terraform** + **Ansible**
+- Devices: Cisco IOS routers in GNS3
+
+### 🔹 Part 2 – OSPF Routing Protocol (Cisco)
+- Automate OSPFv2 configuration using **Ansible `ios_ospfv2` module**
+- Interfaces dynamically assigned, networks advertised via automation
+
+
+### 🔹 [Upcoming] – BGP / EIGRP / ZTP Integration
+- Automating more advanced protocols
+- Using Zero Touch Provisioning for bootstrapping devices
 
 ---
 
-## 🗂️ Folder Structure
+## 📂 Repository Layout
+
 ```bash
-series-01-static-routing-cisco/
+.
+series-XX-XXX-XXXX/
 ├── terraform/
 │   └── main.tf                  
 ├── ansible/
 │   ├── inventory.yml            
 │   ├── interfaces.yml          
-│   └── static_routes.yml        
+│   └── XXX.yml        
 └── README.md                    
 ```
----
 
 ## 🧭 Next Up
 
-➡️ [Series 02 - Static Routing on Arista](../series-02-static-routing-arista) *(coming soon)*
+➡️ [Series 03 - Static Routing on Arista](../series-03-static-routing-arista) *(coming soon)*
 
 ---
 
@@ -44,7 +47,7 @@ Want the full walkthrough with explanations, gotchas, and visuals?
 
 👉 **Follow my blog for the complete tutorial:**  
 
-[Network Automation Series #1: Implementing Basic Static Routing with Terraform & Ansible on a Cisco Router in GNS3](https://medium.com/@netopschic/network-automation-series-1-implementing-basic-static-routing-with-terraform-ansible-on-a-5161a97d73cb)
+[NetOpsChic Medium Blogs](https://medium.com/@netopschic)
 
 I cover everything from the why to the how, plus tips on getting around common GNS3 and Ansible issues.
 
