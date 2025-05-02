@@ -1,0 +1,106 @@
+- name: Configure static routes to reach loopbacks
+  hosts: all
+  gather_facts: no
+  connection: network_cli
+
+  tasks:
+    - name: Enable IP routing on all routers
+      arista.eos.eos_config:
+        lines:
+          - ip routing
+
+    - name: R1 - Route to 2.2.2.2 via R2 and R4
+      arista.eos.eos_static_routes:
+        config:
+          - address_families:
+              - afi: ipv4
+                routes:
+                  - dest: 2.2.2.2/32
+                    next_hops:
+                      - forward_router_address: 20.0.0.2
+                      - forward_router_address: 10.0.0.2
+        state: merged
+      when: inventory_hostname == "R1"
+
+    - name: R2 - Route to 2.2.2.2 via R3
+      arista.eos.eos_static_routes:
+        config:
+          - address_families:
+              - afi: ipv4
+                routes:
+                  - dest: 2.2.2.2/32
+                    next_hops:
+                      - forward_router_address: 30.0.0.2
+        state: merged
+      when: inventory_hostname == "R2"
+
+    - name: R3 - Route to 1.1.1.1 via R2 and R4
+      arista.eos.eos_static_routes:
+        config:
+          - address_families:
+              - afi: ipv4
+                routes:
+                  - dest: 1.1.1.1/32
+                    next_hops:
+                      - forward_router_address: 30.0.0.1
+                      - forward_router_address: 40.0.0.2
+        state: merged
+      when: inventory_hostname == "R3"
+
+    - name: R2 - Route to 1.1.1.1 via R1
+      arista.eos.eos_static_routes:
+        config:
+          - address_families:
+              - afi: ipv4
+                routes:
+                  - dest: 1.1.1.1/32
+                    next_hops:
+                      - forward_router_address: 20.0.0.1
+        state: merged
+      when: inventory_hostname == "R2"
+
+    - name: R4 - Route to 1.1.1.1 via R1
+      arista.eos.eos_static_routes:
+        config:
+          - address_families:
+              - afi: ipv4
+                routes:
+                  - dest: 1.1.1.1/32
+                    next_hops:
+                      - forward_router_address: 10.0.0.1
+        state: merged
+      when: inventory_hostname == "R4"
+
+    - name: R4 - Route to 2.2.2.2 via R3
+      arista.eos.eos_static_routes:
+        config:
+          - address_families:
+              - afi: ipv4
+                routes:
+                  - dest: 2.2.2.2/32
+                    next_hops:
+                      - forward_router_address: 40.0.0.1
+        state: merged
+      when: inventory_hostname == "R4"
+    
+    - name: Route to 20.0.0.0/8 via R2
+      arista.eos.eos_static_routes:
+        config:
+          - address_families:
+              - afi: ipv4
+                routes:
+                  - dest: 20.0.0.0/8
+                    next_hops:
+                      - forward_router_address: 30.0.0.1
+        state: merged
+
+    - name: Route to 10.0.0.0/8 via R4
+      arista.eos.eos_static_routes:
+        config:
+          - address_families:
+              - afi: ipv4
+                routes:
+                  - dest: 10.0.0.0/8
+                    next_hops:
+                      - forward_router_address: 40.0.0.2
+        state: merged
