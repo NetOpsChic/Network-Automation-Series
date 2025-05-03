@@ -35,12 +35,6 @@ series-XX-XXX-XXXX/
 └── README.md                    
 ```
 
-## 🧭 Next Up
-
-➡️ [Series 03 - Static Routing on Arista](../series-03-static-routing-arista) *(coming soon)*
-
----
-
 ## 📚 Follow the Blog
 
 Want the full walkthrough with explanations, gotchas, and visuals?

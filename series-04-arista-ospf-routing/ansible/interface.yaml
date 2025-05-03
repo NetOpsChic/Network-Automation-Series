@@ -1,0 +1,111 @@
+- name: Configure interfaces and IPs
+  hosts: all
+  gather_facts: no
+  connection: network_cli
+
+  tasks:
+    - name: Configure R1 interfaces
+      arista.eos.eos_interfaces:
+        config:
+          - name: Ethernet1
+            enabled: true
+            mode: layer3
+          - name: Ethernet4
+            enabled: true
+            mode: layer3
+          - name: loopback1
+            enabled: true
+        state: merged
+      when: inventory_hostname == "R1"
+
+    - name: Configure R2 interfaces
+      arista.eos.eos_interfaces:
+        config:
+          - name: Ethernet1
+            enabled: true
+            mode: layer3
+          - name: Ethernet2
+            enabled: true
+            mode: layer3
+        state: merged
+      when: inventory_hostname == "R2"
+
+    - name: Configure R3 interfaces
+      arista.eos.eos_interfaces:
+        config:
+          - name: Ethernet2
+            enabled: true
+            mode: layer3
+          - name: Ethernet3
+            enabled: true
+            mode: layer3
+          - name: loopback1
+            enabled: true
+        state: merged
+      when: inventory_hostname == "R3"
+
+    - name: Configure R4 interfaces
+      arista.eos.eos_interfaces:
+        config:
+          - name: Ethernet3
+            enabled: true
+            mode: layer3
+          - name: Ethernet4
+            enabled: true
+            mode: layer3
+        state: merged
+      when: inventory_hostname == "R4"
+
+    - name: Configure IPv4 on R1
+      arista.eos.eos_l3_interfaces:
+        config:
+          - name: Ethernet1
+            ipv4:
+              - address: 20.0.0.1/8
+          - name: Ethernet4
+            ipv4:
+              - address: 10.0.0.1/8
+          - name: loopback1
+            ipv4:
+              - address: 1.1.1.1/8
+        state: merged
+      when: inventory_hostname == "R1"
+
+    - name: Configure IPv4 on R2
+      arista.eos.eos_l3_interfaces:
+        config:
+          - name: Ethernet1
+            ipv4:
+              - address: 20.0.0.2/8
+          - name: Ethernet2
+            ipv4:
+              - address: 30.0.0.1/8
+        state: merged
+      when: inventory_hostname == "R2"
+
+    - name: Configure IPv4 on R3
+      arista.eos.eos_l3_interfaces:
+        config:
+          - name: Ethernet2
+            ipv4:
+              - address: 30.0.0.2/8
+          - name: Ethernet3
+            ipv4:
+              - address: 40.0.0.1/8
+          - name: loopback1
+            ipv4:
+              - address: 2.2.2.2/8
+        state: merged
+      when: inventory_hostname == "R3"
+
+    - name: Configure IPv4 on R4
+      arista.eos.eos_l3_interfaces:
+        config:
+          - name: Ethernet3
+            ipv4:
+              - address: 40.0.0.2/8
+          - name: Ethernet4
+            ipv4:
+              - address: 10.0.0.2/8
+        state: merged
+      when: inventory_hostname == "R4"

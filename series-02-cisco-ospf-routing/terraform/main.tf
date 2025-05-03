@@ -12,7 +12,7 @@ provider "gns3" {
 }
 
 resource "gns3_project" "project1" {
-  name = "cisco-ospf-routing-lab1"
+  name = "cisco-ospf-routing-lab11"
 }
 
 data "gns3_template_id" "router_template" {
