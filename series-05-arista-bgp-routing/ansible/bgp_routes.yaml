@@ -1,0 +1,29 @@
+- name: Configure BGP on Arista routers
+  hosts: all
+  gather_facts: no
+  connection: network_cli
+  tasks:
+    - name: Enable global IP routing
+      arista.eos.eos_config:
+        lines:
+          - ip routing
+          
+    - name: Configure BGP global settings
+      arista.eos.eos_bgp_global:
+        config:
+          as_number: "{{ bgp_as }}"
+          router_id: "{{ loopback_ip | default(router_id) }}"
+          neighbors: "{{ bgp_neighbors }}"
+        state: merged
+    
+    - name: Configure BGP address-family for IPv4
+      arista.eos.eos_bgp_address_family:
+        config:
+          as_number: "{{ bgp_as }}"
+          address_family:
+            - afi: ipv4
+              network: "{{ advertised_networks }}"
+        state: merged
+      when: advertised_networks is defined and advertised_networks | length > 0
+
+
