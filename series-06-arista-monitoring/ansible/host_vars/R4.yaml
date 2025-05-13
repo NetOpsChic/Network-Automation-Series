@@ -1,0 +1,8 @@
+bgp_as: 65004
+router_id: 20.0.0.2
+advertised_networks: []
+bgp_neighbors:
+  - neighbor_address: 10.0.0.1
+    remote_as: 65001
+  - neighbor_address: 40.0.0.1
+    remote_as: 65003

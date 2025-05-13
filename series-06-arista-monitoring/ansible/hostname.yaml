@@ -1,0 +1,33 @@
+- name: Configure static routes to reach loopbacks
+  hosts: all
+  gather_facts: no
+  connection: network_cli
+
+  tasks:
+    - name: Change hostname R1
+      arista.eos.eos_hostname:
+        config:
+          hostname: R1
+        state: merged
+      when: inventory_hostname == "R1"
+    
+    - name: Change hostname R2
+      arista.eos.eos_hostname:
+        config:
+          hostname: R2
+        state: merged
+      when: inventory_hostname == "R2"
+    
+    - name: Change hostname R3
+      arista.eos.eos_hostname:
+        config:
+          hostname: R3
+        state: merged
+      when: inventory_hostname == "R3"
+    
+    - name: Change hostname R4
+      arista.eos.eos_hostname:
+        config:
+          hostname: R4
+        state: merged
+      when: inventory_hostname == "R4"

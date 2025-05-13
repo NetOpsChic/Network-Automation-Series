@@ -1,0 +1,49 @@
+targets:
+  R1:
+    address: 192.168.100.108:6030
+    username: admin
+    password: admin
+    insecure: true
+  R2:
+    address: 192.168.100.111:6030
+    username: admin
+    password: admin
+    insecure: true
+  R3:
+    address: 192.168.100.110:6030
+    username: admin
+    password: admin
+    insecure: true
+  R4:
+    address: 192.168.100.109:6030
+    username: admin
+    password: admin
+    insecure: true
+
+subscriptions:
+  interface-stats:
+    paths:
+      - /interfaces/interface/state/counters
+    mode: stream
+    stream-mode: sample
+    sample-interval: 10s
+  process-cpu:
+    mode: STREAM
+    stream-mode: SAMPLE
+    sample-interval: 15s
+    paths:
+      - /openconfig-system:system/processes/process/state/cpu-usage-system
+      - /openconfig-system:system/processes/process/state/cpu-usage-user
+      - /openconfig-system:system/processes/process/state/cpu-utilization
+
+  process-mem:
+    mode: STREAM
+    stream-mode: SAMPLE
+    sample-interval: 15s
+    paths:
+      - /openconfig-system:system/processes/process/state/memory-usage
+      - /openconfig-system:system/processes/process/state/memory-utilization
+outputs:
+  prom-output:
+    type: prometheus
+    listen: ":9804"

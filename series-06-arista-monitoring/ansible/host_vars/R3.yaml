@@ -1,0 +1,9 @@
+bgp_as: 65003
+loopback_ip: 2.2.2.2
+advertised_networks:
+  - address: 2.2.2.2/32
+bgp_neighbors:
+  - neighbor_address: 30.0.0.1
+    remote_as: 65002
+  - neighbor_address: 40.0.0.2
+    remote_as: 65004

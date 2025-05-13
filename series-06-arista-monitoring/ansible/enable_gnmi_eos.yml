@@ -1,0 +1,15 @@
+---
+- name: Enable gNMI and TerminAttr with Prometheus output on Arista routers
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: Configure gNMI and TerminAttr
+      eos_config:
+        lines:
+          - management api gnmi
+          - transport grpc default
+          - provider eos-native
+          - daemon TerminAttr
+          - exec /usr/bin/TerminAttr -grpcaddr :6042 -loglevel info -disableaaa -taillogs -collector 192.168.122.1:9804
+          - no shutdown
+        save_when: changed
