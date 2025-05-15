@@ -1,0 +1,26 @@
+name: srl-square
+
+topology:
+  kinds:
+    nokia_srlinux:
+      image: ghcr.io/nokia/srlinux
+
+  nodes:
+    node1:
+      kind: nokia_srlinux
+      type: ixrd2l
+    node2:
+      kind: nokia_srlinux
+      type: ixrd2l
+    node3:
+      kind: nokia_srlinux
+      type: ixrd2l
+    node4:
+      kind: nokia_srlinux
+      type: ixrd2l
+
+  links:
+    - endpoints: ["node1:e1-1", "node2:e1-1"]
+    - endpoints: ["node2:e1-2", "node3:e1-1"]
+    - endpoints: ["node3:e1-2", "node4:e1-1"]
+    - endpoints: ["node4:e1-2", "node1:e1-2"]

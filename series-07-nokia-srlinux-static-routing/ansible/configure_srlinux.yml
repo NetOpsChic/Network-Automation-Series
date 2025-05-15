@@ -1,0 +1,268 @@
+---
+- name: Configure clab-srl-square-node1
+  hosts: clab-srl-square-node1
+  gather_facts: false
+  tasks:
+    - name: Apply Node1 subinterfaces, NHGs & routes
+      nokia.srlinux.config:
+        datastore: candidate
+        save_when: changed
+        update:
+          # Interfaces & subinterfaces
+          - path: /interface[name=ethernet-1/1]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/1]/subinterface[index=0]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/1]/subinterface[index=0]/ipv4/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/1]/subinterface[index=0]/ipv4/address[ip-prefix=10.1.1.1/24]
+            value: {}
+          - path: /interface[name=ethernet-1/2]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/2]/subinterface[index=0]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/2]/subinterface[index=0]/ipv4/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/2]/subinterface[index=0]/ipv4/address[ip-prefix=40.1.1.2/24]
+            value: {}
+
+          # Bind sub-interfaces into default VRF
+          - path: /network-instance[name=default]/interface[name=ethernet-1/1.0]
+            value: {}
+          - path: /network-instance[name=default]/interface[name=ethernet-1/2.0]
+            value: {}
+
+          # Next-hop groups
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg1]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg1]/nexthop[index=1]/ip-address
+            value: 10.1.1.2
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg2]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg2]/nexthop[index=1]/ip-address
+            value: 40.1.1.1
+
+          # Static routes
+          - path: /network-instance[name=default]/static-routes/route[prefix=30.1.1.0/24]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/static-routes/route[prefix=30.1.1.0/24]/metric
+            value: 1
+          - path: /network-instance[name=default]/static-routes/route[prefix=30.1.1.0/24]/preference
+            value: 5
+          - path: /network-instance[name=default]/static-routes/route[prefix=30.1.1.0/24]/next-hop-group
+            value: nhg1
+          - path: /network-instance[name=default]/static-routes/route[prefix=20.1.1.0/24]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/static-routes/route[prefix=20.1.1.0/24]/metric
+            value: 1
+          - path: /network-instance[name=default]/static-routes/route[prefix=20.1.1.0/24]/preference
+            value: 5
+          - path: /network-instance[name=default]/static-routes/route[prefix=20.1.1.0/24]/next-hop-group
+            value: nhg2
+
+    - name: Commit Node1 changes
+      nokia.srlinux.cli:
+        commands:
+          - enter candidate
+          - commit now
+
+- name: Configure clab-srl-square-node2
+  hosts: clab-srl-square-node2
+  gather_facts: false
+  tasks:
+    - name: Apply Node2 subinterfaces, NHGs & routes
+      nokia.srlinux.config:
+        datastore: candidate
+        save_when: changed
+        update:
+          # Interfaces & subinterfaces
+          - path: /interface[name=ethernet-1/1]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/1]/subinterface[index=0]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/1]/subinterface[index=0]/ipv4/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/1]/subinterface[index=0]/ipv4/address[ip-prefix=10.1.1.2/24]
+            value: {}
+          - path: /interface[name=ethernet-1/2]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/2]/subinterface[index=0]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/2]/subinterface[index=0]/ipv4/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/2]/subinterface[index=0]/ipv4/address[ip-prefix=20.1.1.1/24]
+            value: {}
+
+          # Bind sub-interfaces into default VRF
+          - path: /network-instance[name=default]/interface[name=ethernet-1/1.0]
+            value: {}
+          - path: /network-instance[name=default]/interface[name=ethernet-1/2.0]
+            value: {}
+
+          # Next-hop groups
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg1]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg1]/nexthop[index=1]/ip-address
+            value: 10.1.1.1
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg2]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg2]/nexthop[index=1]/ip-address
+            value: 20.1.1.2
+
+          # Static routes
+          - path: /network-instance[name=default]/static-routes/route[prefix=40.1.1.0/24]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/static-routes/route[prefix=40.1.1.0/24]/metric
+            value: 1
+          - path: /network-instance[name=default]/static-routes/route[prefix=40.1.1.0/24]/preference
+            value: 5
+          - path: /network-instance[name=default]/static-routes/route[prefix=40.1.1.0/24]/next-hop-group
+            value: nhg1
+          - path: /network-instance[name=default]/static-routes/route[prefix=30.1.1.0/24]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/static-routes/route[prefix=30.1.1.0/24]/metric
+            value: 1
+          - path: /network-instance[name=default]/static-routes/route[prefix=30.1.1.0/24]/preference
+            value: 5
+          - path: /network-instance[name=default]/static-routes/route[prefix=30.1.1.0/24]/next-hop-group
+            value: nhg2
+
+    - name: Commit Node2 changes
+      nokia.srlinux.cli:
+        commands:
+          - enter candidate
+          - commit now
+
+- name: Configure clab-srl-square-node3
+  hosts: clab-srl-square-node3
+  gather_facts: false
+  tasks:
+    - name: Apply Node3 subinterfaces, NHGs & routes
+      nokia.srlinux.config:
+        datastore: candidate
+        save_when: changed
+        update:
+          # Interfaces & subinterfaces
+          - path: /interface[name=ethernet-1/1]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/1]/subinterface[index=0]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/1]/subinterface[index=0]/ipv4/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/1]/subinterface[index=0]/ipv4/address[ip-prefix=20.1.1.2/24]
+            value: {}
+          - path: /interface[name=ethernet-1/2]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/2]/subinterface[index=0]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/2]/subinterface[index=0]/ipv4/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/2]/subinterface[index=0]/ipv4/address[ip-prefix=30.1.1.1/24]
+            value: {}
+
+          # Bind sub-interfaces into default VRF
+          - path: /network-instance[name=default]/interface[name=ethernet-1/1.0]
+            value: {}
+          - path: /network-instance[name=default]/interface[name=ethernet-1/2.0]
+            value: {}
+
+          # Next-hop groups
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg1]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg1]/nexthop[index=1]/ip-address
+            value: 20.1.1.1
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg2]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg2]/nexthop[index=1]/ip-address
+            value: 30.1.1.2
+
+          # Static routes
+          - path: /network-instance[name=default]/static-routes/route[prefix=10.1.1.0/24]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/static-routes/route[prefix=10.1.1.0/24]/metric
+            value: 1
+          - path: /network-instance[name=default]/static-routes/route[prefix=10.1.1.0/24]/preference
+            value: 5
+          - path: /network-instance[name=default]/static-routes/route[prefix=10.1.1.0/24]/next-hop-group
+            value: nhg1
+          - path: /network-instance[name=default]/static-routes/route[prefix=40.1.1.0/24]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/static-routes/route[prefix=40.1.1.0/24]/metric
+            value: 1
+          - path: /network-instance[name=default]/static-routes/route[prefix=40.1.1.0/24]/preference
+            value: 5
+          - path: /network-instance[name=default]/static-routes/route[prefix=40.1.1.0/24]/next-hop-group
+            value: nhg2
+
+    - name: Commit Node3 changes
+      nokia.srlinux.cli:
+        commands:
+          - enter candidate
+          - commit now
+
+- name: Configure clab-srl-square-node4
+  hosts: clab-srl-square-node4
+  gather_facts: false
+  tasks:
+    - name: Apply Node4 subinterfaces, NHGs & routes
+      nokia.srlinux.config:
+        datastore: candidate
+        save_when: changed
+        update:
+          # Interfaces & subinterfaces
+          - path: /interface[name=ethernet-1/1]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/1]/subinterface[index=0]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/1]/subinterface[index=0]/ipv4/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/1]/subinterface[index=0]/ipv4/address[ip-prefix=30.1.1.2/24]
+            value: {}
+          - path: /interface[name=ethernet-1/2]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/2]/subinterface[index=0]/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/2]/subinterface[index=0]/ipv4/admin-state
+            value: enable
+          - path: /interface[name=ethernet-1/2]/subinterface[index=0]/ipv4/address[ip-prefix=40.1.1.1/24]
+            value: {}
+
+          # Bind sub-interfaces into default VRF
+          - path: /network-instance[name=default]/interface[name=ethernet-1/1.0]
+            value: {}
+          - path: /network-instance[name=default]/interface[name=ethernet-1/2.0]
+            value: {}
+
+          # Next-hop groups
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg1]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg1]/nexthop[index=1]/ip-address
+            value: 40.1.1.2
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg2]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/next-hop-groups/group[name=nhg2]/nexthop[index=1]/ip-address
+            value: 30.1.1.1
+
+          # Static routes
+          - path: /network-instance[name=default]/static-routes/route[prefix=10.1.1.0/24]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/static-routes/route[prefix=10.1.1.0/24]/metric
+            value: 1
+          - path: /network-instance[name=default]/static-routes/route[prefix=10.1.1.0/24]/preference
+            value: 5
+          - path: /network-instance[name=default]/static-routes/route[prefix=10.1.1.0/24]/next-hop-group
+            value: nhg1
+          - path: /network-instance[name=default]/static-routes/route[prefix=20.1.1.0/24]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/static-routes/route[prefix=20.1.1.0/24]/metric
+            value: 1
+          - path: /network-instance[name=default]/static-routes/route[prefix=20.1.1.0/24]/preference
+            value: 5
+          - path: /network-instance[name=default]/static-routes/route[prefix=20.1.1.0/24]/next-hop-group
+            value: nhg2
+
+    - name: Commit Node4 changes
+      nokia.srlinux.cli:
+        commands:
+          - enter candidate
+          - commit now
