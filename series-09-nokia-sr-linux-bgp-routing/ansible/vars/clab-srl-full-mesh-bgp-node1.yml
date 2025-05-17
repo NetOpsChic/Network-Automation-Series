@@ -1,0 +1,17 @@
+router_id: 1.1.1.1
+asn: 65001
+interfaces:
+  - name: ethernet-1/1
+    ip: 40.1.1.1/24
+  - name: ethernet-1/2
+    ip: 30.1.1.2/24
+  - name: ethernet-1/3
+    ip: 60.1.1.1/24
+
+bgp_neighbors:
+  - neighbor_ip: 40.1.1.2
+    peer_asn: 65002
+  - neighbor_ip: 30.1.1.1
+    peer_asn: 65004
+  - neighbor_ip: 60.1.1.2
+    peer_asn: 65003

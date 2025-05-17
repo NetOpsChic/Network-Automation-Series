@@ -1,0 +1,107 @@
+- name: Configure SR Linux node with interfaces and minimal full-mesh BGP
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - "vars/{{ inventory_hostname }}.yml"
+
+  pre_tasks:
+    - name: Ensure required vars are defined
+      fail:
+        msg: "Missing required variable: {{ item }}"
+      when: vars[item] is not defined
+      loop:
+        - asn
+        - router_id
+        - interfaces
+        - bgp_neighbors
+
+  tasks:
+    - name: Step 1 – Enable BGP, ASN, Router-ID, and AFI-SAFI
+      nokia.srlinux.config:
+        datastore: candidate
+        save_when: changed
+        update:
+          - path: /network-instance[name=default]/protocols/bgp/admin-state
+            value: enable
+          - path: /network-instance[name=default]/protocols/bgp/autonomous-system
+            value: "{{ asn }}"
+          - path: /network-instance[name=default]/protocols/bgp/router-id
+            value: "{{ router_id }}"
+          - path: /network-instance[name=default]/protocols/bgp/afi-safi[afi-safi-name=ipv4-unicast]/admin-state
+            value: enable
+
+    - name: Step 2 – Create underlay peer-group
+      nokia.srlinux.config:
+        datastore: candidate
+        save_when: changed
+        update:
+          - path: /network-instance[name=default]/protocols/bgp/group[group-name=underlay]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/protocols/bgp/group[group-name=underlay]/peer-as
+            value: "{{ asn }}"
+          - path: /network-instance[name=default]/protocols/bgp/group[group-name=underlay]/afi-safi[afi-safi-name=ipv4-unicast]/admin-state
+            value: enable
+
+    - name: Step 3 – Enable interfaces & bind to VRF
+      nokia.srlinux.config:
+        datastore: candidate
+        save_when: changed
+        update: >-
+          [{% for iface in interfaces %}
+            {"path": "/interface[name={{ iface.name }}]/admin-state",                             "value": "enable"},
+            {"path": "/interface[name={{ iface.name }}]/subinterface[index=0]/admin-state",       "value": "enable"},
+            {"path": "/interface[name={{ iface.name }}]/subinterface[index=0]/ipv4/admin-state",  "value": "enable"},
+            {"path": "/interface[name={{ iface.name }}]/subinterface[index=0]/ipv4/address[ip-prefix={{ iface.ip }}]", "value": {}},
+            {"path": "/network-instance[name=default]/interface[name={{ iface.name }}.0]",         "value": {}}
+            {% if not loop.last %},{% endif %}
+          {% endfor %}]
+
+    - name: Step 4 – Configure BGP neighbors
+      nokia.srlinux.config:
+        datastore: candidate
+        save_when: changed
+        update: >-
+          [{% for nbr in bgp_neighbors %}
+            {"path": "/network-instance[name=default]/protocols/bgp/neighbor[peer-address={{ nbr.neighbor_ip }}]/peer-as",  "value": {{ nbr.peer_asn }}},
+            {"path": "/network-instance[name=default]/protocols/bgp/neighbor[peer-address={{ nbr.neighbor_ip }}]/admin-state", "value": "enable"},
+            {"path": "/network-instance[name=default]/protocols/bgp/neighbor[peer-address={{ nbr.neighbor_ip }}]/peer-group", "value": "underlay"},
+            {"path": "/network-instance[name=default]/protocols/bgp/neighbor[peer-address={{ nbr.neighbor_ip }}]/afi-safi[afi-safi-name=ipv4-unicast]/admin-state", "value": "enable"}
+            {% if not loop.last %},{% endif %}
+          {% endfor %}]
+
+    - name: Step 5 – Define prefix-set of all connected /24s
+      nokia.srlinux.config:
+        datastore: candidate
+        save_when: changed
+        update: >-
+          [
+            {"path": "/routing-policy/prefix-set[name=connected-subnets]", "value": {} }{% if interfaces %},{% endif %}
+            {% for iface in interfaces %}
+              {% set parts = iface.ip.split('/') %}
+              {% set plen = parts[1] %}
+              {% set oct = parts[0].split('.') %}
+              {% set net = oct[0] ~ '.' ~ oct[1] ~ '.' ~ oct[2] ~ '.0' %}
+              {"path": "/routing-policy/prefix-set[name=connected-subnets]/prefix[ip-prefix={{ net }}/{{ plen }}][mask-length-range={{ plen }}..{{ plen }}]", "value": {} }{% if not loop.last %},{% endif %}
+            {% endfor %}
+          ]
+
+    - name: Step 6 – Create export-connected routing policy
+      nokia.srlinux.config:
+        datastore: candidate
+        save_when: changed
+        update:
+          - path: /routing-policy/policy[name=export-connected]/default-action/policy-result
+            value: reject
+          - path: /routing-policy/policy[name=export-connected]/statement[name=connected]/match/prefix/prefix-set
+            value: connected-subnets
+          - path: /routing-policy/policy[name=export-connected]/statement[name=connected]/action/policy-result
+            value: accept
+
+    - name: Step 7 – Attach export-connected policy to BGP
+      nokia.srlinux.config:
+        datastore: candidate
+        save_when: changed
+        update:
+          - path: /network-instance[name=default]/protocols/bgp/export-policy
+            value:
+              - export-connected

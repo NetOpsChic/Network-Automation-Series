@@ -1,0 +1,33 @@
+- name: Configure SR Linux node with interfaces and OSPF
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - "vars/{{ inventory_hostname }}.yml"
+
+  tasks:
+    - name: Step 1 - Create OSPF instance with version and router ID
+      nokia.srlinux.config:
+        datastore: candidate
+        save_when: changed
+        update:
+          - path: /network-instance[name=default]/protocols/ospf/instance[name=1]/admin-state
+            value: enable
+          - path: /network-instance[name=default]/protocols/ospf/instance[name=1]/version
+            value: ospf-v2
+          - path: /network-instance[name=default]/protocols/ospf/instance[name=1]/router-id
+            value: "{{ router_id }}"
+
+    - name: Step 2 - Enable interfaces, assign IPs, bind to VRF, and attach to OSPF
+      nokia.srlinux.config:
+        datastore: candidate
+        save_when: changed
+        update: >-
+          [{% for iface in interfaces %}
+            {"path": "/interface[name={{ iface.name }}]/admin-state", "value": "enable"},
+            {"path": "/interface[name={{ iface.name }}]/subinterface[index=0]/admin-state", "value": "enable"},
+            {"path": "/interface[name={{ iface.name }}]/subinterface[index=0]/ipv4/admin-state", "value": "enable"},
+            {"path": "/interface[name={{ iface.name }}]/subinterface[index=0]/ipv4/address[ip-prefix={{ iface.ip }}]", "value": {}},
+            {"path": "/network-instance[name=default]/interface[name={{ iface.name }}.0]", "value": {}},
+            {"path": "/network-instance[name=default]/protocols/ospf/instance[name=1]/area[area-id=0.0.0.0]/interface[interface-name={{ iface.name }}.0]/admin-state", "value": "enable"}
+            {% if not loop.last %},{% endif %}
+          {% endfor %}]
